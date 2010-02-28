@@ -53,7 +53,7 @@ class DryGenerator < Rails::Generator::NamedBase
       :shoulda          => CONFIG_OPTIONS['shoulda']      || false,
       :rspec            => CONFIG_OPTIONS['rspec']        || false
     }.freeze
-  
+
   TEST_PATHS = {
       :test_unit        => 'test',
       :shoulda          => 'test',

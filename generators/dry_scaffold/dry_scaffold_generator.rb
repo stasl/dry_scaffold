@@ -77,15 +77,15 @@ class DryScaffoldGenerator < DryGenerator
   alias_method  :controller_file_name, :controller_underscore_name
   alias_method  :controller_table_name, :controller_plural_name
   
-  def initialize(runtime_args, runtime_options = {})
+  def initialize(runtime_args, runtime_options = {})    
+    super(runtime_args, runtime_options)
     @options = DEFAULT_OPTIONS.merge(options)
-    super(runtime_args, runtime_options.merge(@options))
     
     @controller_name = @name.pluralize
     base_name, @controller_class_path, @controller_file_path, @controller_class_nesting, @controller_class_nesting_depth = extract_modules(@controller_name)
     @controller_class_name_without_nesting, @controller_underscore_name, @controller_plural_name = inflect_names(base_name)
     @controller_singular_name = base_name.singularize
-    
+
     if @controller_class_nesting.empty?
       @controller_class_name = @controller_class_name_without_nesting
     else
@@ -169,12 +169,12 @@ class DryScaffoldGenerator < DryGenerator
         # View template for each action.
         (actions & ACTION_VIEW_TEMPLATES.keys).each do |action|
           m.template File.join('views', "#{view_template_format}", "#{action}.html.#{view_template_format}"),
-            File.join(VIEWS_PATH, controller_file_name, "#{action}.html.#{view_template_format}")
+            File.join(VIEWS_PATH, controller_class_path, controller_file_name, "#{action}.html.#{view_template_format}")
             
           # View template for each partial - if not already copied.
           (ACTION_VIEW_TEMPLATES[action] || []).each do |partial|
             m.template File.join('views', "#{view_template_format}", "_#{partial}.html.#{view_template_format}"),
-              File.join(VIEWS_PATH, controller_file_name, "_#{partial}.html.#{view_template_format}")
+              File.join(VIEWS_PATH, controller_class_path, controller_file_name, "_#{partial}.html.#{view_template_format}")
           end
         end
       end
@@ -204,7 +204,7 @@ class DryScaffoldGenerator < DryGenerator
       end
       
       # Models - use Rails default generator.
-      m.dependency 'dry_model', [name] + @args_for_model, options.merge(:collision => :skip)
+      m.dependency 'dry_model', [model_singular_name] + @args_for_model, options.merge(:collision => :skip)
     end
   end
   
@@ -226,23 +226,35 @@ class DryScaffoldGenerator < DryGenerator
   ### Link Helpers.
   
   def collection_instance
-    options[:resourceful] ? "#{collection_name}" : "@#{collection_name}"
+    "@#{model_plural_name}"
   end
   
   def resource_instance
-    options[:resourceful] ? "#{singular_name}" : "@#{singular_name}"
+    "@#{model_singular_name}"
   end
-  
+
+  def form_resource_instance(name = resource_instance)
+    controller_class_path.empty? ? name : (controller_class_path.map(&:to_sym) << name).inspect.gsub(/"/,'')          
+  end
+
+  def namespaced_singular_name
+    (controller_class_path + [singular_name])*'_'
+  end
+
+  def namespaced_plural_name
+    (controller_class_path + [model_plural_name])*'_'
+  end
+      
   def index_path
-    "#{collection_name}_path"
+    "#{namespaced_plural_name}_path"  
   end
   
   def new_path
-    "new_#{singular_name}_path"
+    "new_#{namespaced_singular_name}_path"
   end
   
   def show_path(object_name = resource_instance)
-    "#{singular_name}_path(#{object_name})"
+    "#{namespaced_singular_name}_path(#{object_name})"
   end
   
   def edit_path(object_name = resource_instance)
@@ -254,15 +266,15 @@ class DryScaffoldGenerator < DryGenerator
   end
   
   def index_url
-    "#{collection_name}_url"
+    "#{namespaced_plural_name}_url"
   end
   
   def new_url
-    "new_#{singular_name}_url"
+    "new_#{namespaced_singular_name}_url"
   end
   
   def show_url(object_name = resource_instance)
-    "#{singular_name}_url(#{object_name})"
+    "#{namespaced_singular_name}_url(#{object_name})"
   end
   
   def edit_url(object_name = resource_instance)
@@ -325,21 +337,22 @@ class DryScaffoldGenerator < DryGenerator
       @collection_name = options[:resourceful] ? RESOURCEFUL_COLLECTION_NAME : @model_plural_name
       @singular_name = options[:resourceful] ? RESOURCEFUL_SINGULAR_NAME : @model_singular_name
       @plural_name = options[:resourceful] ? RESOURCEFUL_SINGULAR_NAME.pluralize : @model_plural_name
+      @class_name = @model_singular_name.capitalize
     end
     
     def add_options!(opt)
       super(opt)
-      
+
       ### CONTROLLER + VIEW + HELPER
       
       opt.separator ' '
       opt.separator 'Scaffold Options:'
-      
+
       opt.on('--skip-resourceful',
         "Controller: Skip 'inherited_resources' style controllers and views. Requires gem 'josevalim-inherited_resources'.") do |v|
         options[:resourceful] = !v
       end
-      
+
       opt.on('--skip-pagination',
         "Controller/View: Skip 'will_paginate' for collections in controllers and views. Requires gem 'mislav-will_paginate'.") do |v|
         options[:pagination] = !v

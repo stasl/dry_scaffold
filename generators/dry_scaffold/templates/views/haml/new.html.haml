@@ -2,12 +2,12 @@
   = 'New <%= model_singular_name.humanize %>'
   
 <% if options[:formtastic] -%>
-- semantic_form_for(<%= resource_instance %>) do |form|
+- semantic_form_for(<%= form_resource_instance %>) do |form|
   = render 'form', :form => form
   - form.buttons do
     = form.commit_button 'Create'
 <% else -%>
-- form_for(<%= resource_instance %>) do |form|
+- form_for(<%= form_resource_instance %>) do |form|
   = form.error_messages
   = render 'form', :form => form
   %p.buttons

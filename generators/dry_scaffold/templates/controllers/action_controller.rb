@@ -108,7 +108,7 @@ class <%= controller_class_name %>Controller < ApplicationController
         flash[:notice] = "<%= singular_name.humanize %> was successfully created."
 <% formats.each do |_format| -%>
 <% case _format when :html then -%>
-        format.html { redirect_to(<%= resource_instance %>) }
+        format.html { redirect_to(<%= form_resource_instance %>) }
 <% when :js then -%>
         format.js   # create.js.rjs
 <% when :xml, :json then -%>
@@ -153,7 +153,7 @@ class <%= controller_class_name %>Controller < ApplicationController
         flash[:notice] = "<%= singular_name.humanize %> was successfully updated."
 <% formats.each do |_format| -%>
 <% case _format when :html then -%>
-        format.html { redirect_to(<%= resource_instance %>) }
+        format.html { redirect_to(<%= form_resource_instance %>) }
 <% when :js then -%>
         format.js   # update.js.rjs
 <% when :xml, :json, :yml, :yaml, :txt, :text then -%>
@@ -194,7 +194,7 @@ class <%= controller_class_name %>Controller < ApplicationController
         flash[:notice] = "<%= singular_name.humanize %> was successfully destroyed."
 <% formats.each do |_format| -%>
 <% case _format when :html then -%>
-        format.html { redirect_to(<%= plural_name %>_url) }
+        format.html { redirect_to(<%= namespaced_plural_name %>_url) }
 <% when :js then -%>
         format.js   # destroy.js.rjs
 <% when :xml, :json, :yml, :yaml, :txt, :text then -%>

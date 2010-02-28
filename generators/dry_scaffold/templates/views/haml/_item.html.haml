@@ -7,4 +7,4 @@
     |
     = link_to 'Edit', <%= edit_path(singular_name) %>
     |
-    = link_to 'Destroy', <%= destroy_path(singular_name) %>, :confirm => 'Are you sure?', :method => :delete
+    = link_to 'Destroy', <%= destroy_path(form_resource_instance(singular_name)) %>, :confirm => 'Are you sure?', :method => :delete

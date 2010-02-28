@@ -19,8 +19,8 @@ class DryModelGenerator < DryGenerator
               :references
               
   def initialize(runtime_args, runtime_options = {})
+    super(runtime_args, runtime_options)
     @options = DEFAULT_OPTIONS.merge(options)
-    super(runtime_args, runtime_options.merge(@options))
     
     @attributes ||= []
     args_for_model = []
